@@ -1,0 +1,23 @@
+[
+{
+	"message": "Este tweet se ha publicado de un fichero .txt y debo publicarme a las 22:38 del 10/10/2021, soy el primero de 3 tweets automatizados seguidos",
+	"date": "10/10/2021",
+	"hour": "22",
+	"minute": "38",
+	"second": "00"
+},
+{
+	"message": "Este tweet se ha publicado de un fichero .txt y debo publicarme a las 22:39 del 10/10/2021, soy el segundo de 3 tweets automatizados seguidos",
+	"date": "10/10/2021",
+	"hour": "22",
+	"minute": "39",
+	"second": "00"
+},
+{
+	"message": "Este tweet se ha publicado de un fichero .txt y debo publicarme a las 22:40 del 10/10/2021, soy el tercero de 3 tweets automatizados seguidos",
+	"date": "10/10/2021",
+	"hour": "22",
+	"minute": "40",
+	"second": "00"
+}
+]
