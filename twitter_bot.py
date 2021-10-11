@@ -8,20 +8,25 @@ import schedule
 
 class TweepyController:
     def __init__(self):
-        with open('keys.txt') as json_file:
-            data = json.load(json_file)
-        self.api_key = data["api_key"]
-        self.api_key_secret = data["api_key_secret"]
-        self.bearer_token = data["bearer_token"]
-        self.access_token = data["access_token"]
-        self.access_token_secret = data["access_token_secret"]
+        with open('user_keys.txt') as json_file:
+            user_data = json.load(json_file)
+        with open('app_keys.txt') as json_file2:
+            app_data = json.load(json_file2)
+        self.api_key = app_data["api_key"]
+        self.api_key_secret = app_data["api_key_secret"]
+        self.bearer_token = app_data["bearer_token"]
+        self.access_token = user_data[0]["access_token"]
+        self.access_token_secret = user_data[0]["access_token_secret"]
         self.api = self.initialize_api()
 
     def initialize_api(self):
-        auth = tweepy.OAuthHandler(self.api_key, self.api_key_secret)
-        auth.set_access_token(self.access_token, self.access_token_secret)
-        api = tweepy.API(auth)
+        self.auth = tweepy.OAuthHandler(self.api_key, self.api_key_secret)
+        self.auth.set_access_token(self.access_token, self.access_token_secret)
+        api = tweepy.API(self.auth)
         self.validate_api(api)
+        info = api.get_settings()
+        info = api.get_settings()
+        print(info["screen_name"])
         return api
 
     @staticmethod
@@ -33,6 +38,44 @@ class TweepyController:
 
     def tweet_message(self, message):
         self.api.update_status(str(message))
+
+    def get_auth_url(self):
+        # This function needs to be executed manually, because requires human interaction
+        # Running it will give you a link that must be used on a browser with the twitter account whose tokens you want
+        # to obtain, then after accepting authorization, it will give you a serial number which must be typed in the
+        # console, after that if no error is found, you will get on the console the access and the secret access tokens
+        try:
+            redirect_url = self.auth.get_authorization_url()
+            print(redirect_url)
+            verifier = input('Verifier:')
+            try:
+                self.auth.get_access_token(verifier)
+                api = tweepy.API(self.auth)
+                self.validate_api(api)
+                user_info = api.get_settings()
+                new_user_keys = {
+                    "access_token": self.auth.access_token,
+                    "access_token_secret": self.auth.access_token_secret,
+                    "name_account": user_info["screen_name"]
+                }
+
+                with open('user_keys.txt') as json_file:
+                    user_data = json.load(json_file)
+
+                user_in_txt_already = False
+                for user in user_data:
+                    if user == new_user_keys:
+                        user_not_in_txt_already = True
+                if not user_in_txt_already:
+                    user_data.append(new_user_keys)
+                    json_object = json.dumps(user_data, indent=4)
+                    with open('user_keys.txt', 'w') as outfile:
+                        outfile.write(json_object)
+
+            except tweepy.TweepError:
+                print("Error! Failed to get access token.")
+        except tweepy.TweepError:
+            print("Error! Failed to get request token.")
 
 
 class TweeterBot:
@@ -93,5 +136,5 @@ class TweeterBot:
             time.sleep(1)
 
 
-tweeterbot_object = TweeterBot()
-tweeterbot_object.main()
+tweeterbot_object = TweepyController()
+tweeterbot_object.get_auth_url()
