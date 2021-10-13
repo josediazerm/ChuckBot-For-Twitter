@@ -8,25 +8,25 @@ import schedule
 
 class TweepyController:
     def __init__(self):
-        with open('user_keys.txt') as json_file:
+        self.user_keys_file = 'user_keys.txt'
+        self.app_keys_file = 'app_keys.txt'
+        with open(self.user_keys_file) as json_file:
             user_data = json.load(json_file)
-        with open('app_keys.txt') as json_file2:
+        with open(self.app_keys_file) as json_file2:
             app_data = json.load(json_file2)
         self.api_key = app_data["api_key"]
         self.api_key_secret = app_data["api_key_secret"]
         self.bearer_token = app_data["bearer_token"]
-        self.access_token = user_data[0]["access_token"]
-        self.access_token_secret = user_data[0]["access_token_secret"]
+        self.access_token = [user["access_token"] for user in user_data]
+        self.access_token_secret = [user["access_token_secret"] for user in user_data]
         self.api = self.initialize_api()
+        self.auth = None
 
-    def initialize_api(self):
+    def initialize_api(self, account_number=0):
         self.auth = tweepy.OAuthHandler(self.api_key, self.api_key_secret)
-        self.auth.set_access_token(self.access_token, self.access_token_secret)
+        self.auth.set_access_token(self.access_token[account_number], self.access_token_secret[account_number])
         api = tweepy.API(self.auth)
         self.validate_api(api)
-        info = api.get_settings()
-        info = api.get_settings()
-        print(info["screen_name"])
         return api
 
     @staticmethod
@@ -59,17 +59,17 @@ class TweepyController:
                     "name_account": user_info["screen_name"]
                 }
 
-                with open('user_keys.txt') as json_file:
+                with open(self.user_keys_file) as json_file:
                     user_data = json.load(json_file)
 
                 user_in_txt_already = False
                 for user in user_data:
                     if user == new_user_keys:
-                        user_not_in_txt_already = True
+                        user_in_txt_already = True
                 if not user_in_txt_already:
                     user_data.append(new_user_keys)
                     json_object = json.dumps(user_data, indent=4)
-                    with open('user_keys.txt', 'w') as outfile:
+                    with open(self.user_keys_file, 'w') as outfile:
                         outfile.write(json_object)
 
             except tweepy.TweepError:
